@@ -1,13 +1,12 @@
 {
-  "name": "frontend-project-12",
+  "name": "@hexlet/code",
   "version": "1.0.0",
-  "description": "[![Actions Status](https://github.com/Ivan-ObiWan/frontend-project-12/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/Ivan-ObiWan/frontend-project-12/actions/workflows/hexlet-check.yml)",
+  "description": "Hexlet Chat Project",
   "main": "index.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "start": "vite",
+    "build": "make build",
+    "start": "make start",
+    "dev": "make dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -23,21 +22,6 @@
   },
   "homepage": "https://github.com/Ivan-ObiWan/frontend-project-12#readme",
   "dependencies": {
-    "@reduxjs/toolkit": "1.9.7",
-    "axios": "1.6.2",
-    "bootstrap": "5.3.2",
-    "date-fns": "2.30.0",
-    "formik": "2.4.5",
-    "react": "18.2.0",
-    "react-bootstrap": "2.9.2",
-    "react-dom": "18.2.0",
-    "react-redux": "8.1.3",
-    "react-router-dom": "6.20.1",
-    "socket.io-client": "4.5.4",
-    "yup": "1.3.3"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "4.2.1",
-    "vite": "5.0.10"
+    "@hexlet/chat-server": "^2.0.4"
   }
 }
