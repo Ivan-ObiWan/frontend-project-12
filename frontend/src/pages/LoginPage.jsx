@@ -1,23 +1,42 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import axios from 'axios';
+import { setAuthData, setError, setLoading } from '../slices/authSlice';
 
-// Схема валидации
 const LoginSchema = Yup.object().shape({
-  username: Yup.string()
-    .required('Обязательное поле'),
-  password: Yup.string()
-    .required('Обязательное поле')
-    .min(6, 'Не менее 6 символов'),
+  username: Yup.string().required('Обязательное поле'),
+  password: Yup.string().required('Обязательное поле'),
 });
 
 function LoginPage() {
-  const handleSubmit = (values, { setSubmitting }) => {
-    // Пока просто выводим в консоль
-    console.log('Данные для входа:', values);
-    alert('Форма отправлена! (логика пока не реализована)');
-    setSubmitting(false);
+  const dispatch = useDispatch();
+  const { token, error, isLoading } = useSelector((state) => state.auth);
+
+  // Если уже авторизован — редирект в чат
+  if (token) {
+    return <Navigate to="/" replace />;
+  }
+
+  const handleSubmit = async (values, { setSubmitting }) => {
+    dispatch(setLoading());
+    
+    try {
+      const response = await axios.post('/api/v1/login', {
+        username: values.username,
+        password: values.password,
+      });
+
+      const { token, user } = response.data;
+      dispatch(setAuthData({ token, user }));
+      setSubmitting(false);
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || 'Ошибка авторизации';
+      dispatch(setError(errorMessage));
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -32,6 +51,12 @@ function LoginPage() {
       >
         {({ isSubmitting }) => (
           <Form>
+            {error && (
+              <div className="alert alert-danger" role="alert">
+                {error}
+              </div>
+            )}
+
             <div className="mb-3">
               <label htmlFor="username" className="form-label">Ваш ник</label>
               <Field
@@ -59,9 +84,9 @@ function LoginPage() {
             <button
               type="submit"
               className="btn btn-primary w-100"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isLoading}
             >
-              Войти
+              {isLoading ? 'Загрузка...' : 'Войти'}
             </button>
           </Form>
         )}
