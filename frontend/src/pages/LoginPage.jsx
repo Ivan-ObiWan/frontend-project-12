@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Link, Navigate } from 'react-router-dom';
@@ -14,13 +14,28 @@ const LoginSchema = Yup.object().shape({
 function LoginPage() {
   const dispatch = useDispatch();
   const { token, error, isLoading } = useSelector((state) => state.auth);
+  
+  const usernameRef = useRef(null);
 
-  // Если уже авторизован — редирект в чат
+  useEffect(() => {
+    if (usernameRef.current) {
+      usernameRef.current.focus();
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      dispatch(setError(null));
+    };
+  }, [dispatch]);
+
   if (token) {
+    console.log('✅ Token exists, redirecting to chat');
     return <Navigate to="/" replace />;
   }
 
   const handleSubmit = async (values, { setSubmitting }) => {
+    console.log('📤 Submitting login form:', values);
     dispatch(setLoading());
     
     try {
@@ -29,10 +44,19 @@ function LoginPage() {
         password: values.password,
       });
 
+      console.log('📦 Full response:', response);
+      console.log('📦 Response data:', response.data);
+
       const { token, user } = response.data;
+      console.log('🔑 Token:', token);
+      console.log('👤 User:', user);
+
       dispatch(setAuthData({ token, user }));
+      console.log('✅ Login successful!');
       setSubmitting(false);
     } catch (err) {
+      console.error('❌ Login error:', err);
+      console.error('❌ Error response:', err.response);
       const errorMessage = err.response?.data?.message || 'Ошибка авторизации';
       dispatch(setError(errorMessage));
       setSubmitting(false);
@@ -65,6 +89,7 @@ function LoginPage() {
                 id="username"
                 className="form-control"
                 placeholder="Введите ник"
+                innerRef={usernameRef}
               />
               <ErrorMessage name="username" component="div" className="text-danger" />
             </div>
