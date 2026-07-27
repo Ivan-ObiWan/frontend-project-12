@@ -28,9 +28,12 @@ const messagesSlice = createSlice({
       state.isLoading = false;
       state.error = null;
     },
+    clearMessages: (state) => {
+      state.messages = [];
+    },
   },
 });
 
-export const { setMessages, addMessage, setLoading, setError, setLoaded } =
+export const { setMessages, addMessage, setLoading, setError, setLoaded, clearMessages } =
   messagesSlice.actions;
 export default messagesSlice.reducer;
