@@ -3,15 +3,17 @@ import { Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../slices/authSlice';
 import {
-  setChannels,
+  fetchChannels,
   setCurrentChannel,
-  setLoading,
-  setError,
-  setLoaded,
+  clearError,
 } from '../slices/channelsSlice';
 import { setMessages, addMessage } from '../slices/messagesSlice';
 import axios from '../api/axios';
 import useSocket from '../hooks/useSocket';
+import AddChannelModal from '../components/AddChannelModal';
+import RenameChannelModal from '../components/RenameChannelModal';
+import DeleteChannelModal from '../components/DeleteChannelModal';
+import ChannelMenu from '../components/ChannelMenu';
 
 function ChatPage() {
   const dispatch = useDispatch();
@@ -21,16 +23,21 @@ function ChatPage() {
   );
   const { messages } = useSelector((state) => state.messages);
 
-  console.log('🔍 CHANNELS:', channels);
-  console.log('🔍 CURRENT_CHANNEL_ID:', currentChannelId);
-  console.log('🔍 MESSAGES:', messages);
+  console.log('🔍 ChatPage render:');
+  console.log('  🔑 token:', token ? token.substring(0, 20) + '...' : 'null');
+  console.log('  📡 channels:', channels);
+  console.log('  🆔 currentChannelId:', currentChannelId);
 
   const [newMessage, setNewMessage] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedChannel, setSelectedChannel] = useState(null);
+  
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
-  const { isConnected, emit } = useSocket(token);
+  const { isConnected } = useSocket(token);
 
   const filteredMessages = useMemo(() => {
     return messages?.filter((msg) => msg.channelId === currentChannelId) || [];
@@ -45,50 +52,50 @@ function ChatPage() {
     dispatch(setCurrentChannel(channelId));
   }, [dispatch]);
 
+  // Загрузка каналов
   useEffect(() => {
-    const fetchData = async () => {
-      console.log('🔄 Fetching data...');
-      dispatch(setLoading());
-      
-      try {
-        console.log('📡 Requesting channels...');
-        const channelsResponse = await axios.get('/channels');
-        console.log('📡 Channels response:', channelsResponse.data);
-        
-        const channelsData = channelsResponse.data.data || [];
-        dispatch(setChannels(channelsData));
-        
-        if (channelsData.length > 0) {
-          dispatch(setCurrentChannel(channelsData[0].id));
-          console.log('✅ Current channel set to:', channelsData[0].id);
-        }
-
-        const messagesResponse = await axios.get('/messages');
-        console.log('📨 Messages response:', messagesResponse.data);
-        
-        const messagesData = messagesResponse.data.data || [];
-        dispatch(setMessages(messagesData));
-
-        dispatch(setLoaded());
-        console.log('✅ Data loaded successfully');
-      } catch (err) {
-        console.error('❌ Error fetching data:', err);
-        const errorMessage = err.response?.data?.message || 'Ошибка загрузки данных';
-        dispatch(setError(errorMessage));
-      }
-    };
-
+    console.log('🔄 useEffect [fetchChannels] triggered');
+    console.log('  🔑 token:', token ? 'exists' : 'null');
     if (token) {
-      fetchData();
+      console.log('📡 Calling fetchChannels...');
+      dispatch(fetchChannels())
+        .unwrap()
+        .then((result) => {
+          console.log('✅ fetchChannels result:', result);
+        })
+        .catch((err) => {
+          console.error('❌ fetchChannels error:', err);
+        });
+    } else {
+      console.log('⏳ No token, skipping fetchChannels');
     }
   }, [dispatch, token]);
 
+  // Загрузка сообщений при выборе канала
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (!currentChannelId) {
+        console.log('⏳ No currentChannelId, skipping messages fetch');
+        return;
+      }
+      console.log('📨 Fetching messages for channel:', currentChannelId);
+      try {
+        const response = await axios.get('/messages');
+        const messagesData = response.data.data || [];
+        console.log('📨 Messages loaded:', messagesData.length);
+        dispatch(setMessages(messagesData));
+      } catch (err) {
+        console.error('❌ Error fetching messages:', err);
+      }
+    };
+    fetchMessages();
+  }, [dispatch, currentChannelId]);
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    console.log('📤 Sending message...');
     
     if (!newMessage.trim() || !currentChannelId) {
-      console.log('❌ No message or channel:', { newMessage, currentChannelId });
+      console.log('❌ Cannot send: no message or channel');
       return;
     }
 
@@ -107,6 +114,18 @@ function ChatPage() {
     }
   };
 
+  const handleRename = (channel) => {
+    console.log('✏️ Rename channel:', channel);
+    setSelectedChannel(channel);
+    setShowRenameModal(true);
+  };
+
+  const handleDelete = (channel) => {
+    console.log('🗑️ Delete channel:', channel);
+    setSelectedChannel(channel);
+    setShowDeleteModal(true);
+  };
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [filteredMessages]);
@@ -115,11 +134,15 @@ function ChatPage() {
     inputRef.current?.focus();
   }, [currentChannelId]);
 
+  // Если нет токена — редирект
   if (!token) {
+    console.log('🚫 No token, redirecting to login');
     return <Navigate to="/login" replace />;
   }
 
+  // Если загрузка
   if (isLoading) {
+    console.log('⏳ Loading...');
     return (
       <div className="container mt-5 text-center">
         <h3>Загрузка...</h3>
@@ -127,18 +150,44 @@ function ChatPage() {
     );
   }
 
+  // Если ошибка
   if (error) {
+    console.log('❌ Error:', error);
     return (
       <div className="container mt-5">
         <div className="alert alert-danger" role="alert">
           {error}
         </div>
-        <button className="btn btn-primary" onClick={() => window.location.reload()}>
+        <button className="btn btn-primary" onClick={() => dispatch(clearError())}>
           Попробовать снова
         </button>
       </div>
     );
   }
+
+  // Если каналы не загрузились
+  if (!channels || channels.length === 0) {
+    console.log('📡 No channels loaded yet');
+    return (
+      <div className="container mt-5 text-center">
+        <h3>Нет каналов</h3>
+        <p className="text-muted">Попробуйте обновить страницу</p>
+        <button 
+          className="btn btn-primary mt-3" 
+          onClick={() => {
+            console.log('🔄 Manual reload clicked');
+            dispatch(fetchChannels());
+          }}
+        >
+          Загрузить каналы
+        </button>
+      </div>
+    );
+  }
+
+  console.log('✅ Rendering chat with', channels.length, 'channels');
+
+  const currentChannel = channels.find((c) => c.id === currentChannelId);
 
   return (
     <div className="container-fluid vh-100 d-flex flex-column">
@@ -148,30 +197,36 @@ function ChatPage() {
             <h5>Каналы</h5>
             <button 
               className="btn btn-primary btn-sm"
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => {
+                console.log('➕ Add channel button clicked');
+                setShowAddModal(true);
+              }}
             >
               +
             </button>
           </div>
           <ul className="list-unstyled">
-            {channels && channels.length > 0 ? (
-              channels.map((channel) => (
-                <li key={channel.id}>
-                  <button
-                    className={`btn w-100 text-start ${
-                      currentChannelId === channel.id
-                        ? 'btn-primary'
-                        : 'btn-outline-secondary'
-                    }`}
-                    onClick={() => handleChannelSwitch(channel.id)}
-                  >
-                    # {channel.name}
-                  </button>
-                </li>
-              ))
-            ) : (
-              <li className="text-muted">Нет каналов</li>
-            )}
+            {channels.map((channel) => (
+              <li key={channel.id} className="d-flex align-items-center mb-1">
+                <button
+                  className={`btn w-100 text-start ${
+                    currentChannelId === channel.id
+                      ? 'btn-primary'
+                      : 'btn-outline-secondary'
+                  }`}
+                  onClick={() => handleChannelSwitch(channel.id)}
+                >
+                  # {channel.name}
+                </button>
+                {currentChannelId === channel.id && (
+                  <ChannelMenu
+                    channel={channel}
+                    onRename={handleRename}
+                    onDelete={handleDelete}
+                  />
+                )}
+              </li>
+            ))}
           </ul>
           <hr />
           <div className="mb-2">
@@ -187,7 +242,7 @@ function ChatPage() {
         <div className="col-9 d-flex flex-column p-0">
           <div className="p-3 border-bottom bg-white d-flex justify-content-between align-items-center">
             <h5>
-              # {channels?.find((c) => c.id === currentChannelId)?.name || 'Выберите канал'}
+              # {currentChannel?.name || 'Выберите канал'}
             </h5>
             <span className="text-muted small">{filteredMessages.length} сообщений</span>
           </div>
@@ -230,6 +285,18 @@ function ChatPage() {
           </div>
         </div>
       </div>
+
+      <AddChannelModal show={showAddModal} onHide={() => setShowAddModal(false)} />
+      <RenameChannelModal
+        show={showRenameModal}
+        onHide={() => setShowRenameModal(false)}
+        channel={selectedChannel}
+      />
+      <DeleteChannelModal
+        show={showDeleteModal}
+        onHide={() => setShowDeleteModal(false)}
+        channel={selectedChannel}
+      />
     </div>
   );
 }
