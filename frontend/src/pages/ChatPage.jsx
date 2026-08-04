@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../slices/authSlice';
 import {
@@ -18,21 +18,20 @@ import ChannelMenu from '../components/ChannelMenu';
 function ChatPage() {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);
+  const user = useSelector((state) => state.auth.user);
   const { channels, currentChannelId, isLoading, error } = useSelector(
     (state) => state.channels
   );
   const { messages } = useSelector((state) => state.messages);
-
-  console.log('🔍 ChatPage render:');
-  console.log('  🔑 token:', token ? token.substring(0, 20) + '...' : 'null');
-  console.log('  📡 channels:', channels);
-  console.log('  🆔 currentChannelId:', currentChannelId);
 
   const [newMessage, setNewMessage] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedChannel, setSelectedChannel] = useState(null);
+  const [isDark, setIsDark] = useState(() => {
+    return localStorage.getItem('theme') === 'dark';
+  });
   
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -48,41 +47,31 @@ function ChatPage() {
   }, [dispatch]);
 
   const handleChannelSwitch = useCallback((channelId) => {
-    console.log('🔄 Switching to channel:', channelId);
     dispatch(setCurrentChannel(channelId));
   }, [dispatch]);
 
-  // Загрузка каналов
+  const toggleTheme = () => {
+    const newTheme = !isDark;
+    setIsDark(newTheme);
+    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
+  };
+
   useEffect(() => {
-    console.log('🔄 useEffect [fetchChannels] triggered');
-    console.log('  🔑 token:', token ? 'exists' : 'null');
+    document.documentElement.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
+  }, [isDark]);
+
+  useEffect(() => {
     if (token) {
-      console.log('📡 Calling fetchChannels...');
-      dispatch(fetchChannels())
-        .unwrap()
-        .then((result) => {
-          console.log('✅ fetchChannels result:', result);
-        })
-        .catch((err) => {
-          console.error('❌ fetchChannels error:', err);
-        });
-    } else {
-      console.log('⏳ No token, skipping fetchChannels');
+      dispatch(fetchChannels());
     }
   }, [dispatch, token]);
 
-  // Загрузка сообщений при выборе канала
   useEffect(() => {
     const fetchMessages = async () => {
-      if (!currentChannelId) {
-        console.log('⏳ No currentChannelId, skipping messages fetch');
-        return;
-      }
-      console.log('📨 Fetching messages for channel:', currentChannelId);
+      if (!currentChannelId) return;
       try {
         const response = await axios.get('/messages');
         const messagesData = response.data.data || [];
-        console.log('📨 Messages loaded:', messagesData.length);
         dispatch(setMessages(messagesData));
       } catch (err) {
         console.error('❌ Error fetching messages:', err);
@@ -94,10 +83,7 @@ function ChatPage() {
   const handleSendMessage = async (e) => {
     e.preventDefault();
     
-    if (!newMessage.trim() || !currentChannelId) {
-      console.log('❌ Cannot send: no message or channel');
-      return;
-    }
+    if (!newMessage.trim() || !currentChannelId) return;
 
     const messageData = {
       channelId: currentChannelId,
@@ -115,13 +101,11 @@ function ChatPage() {
   };
 
   const handleRename = (channel) => {
-    console.log('✏️ Rename channel:', channel);
     setSelectedChannel(channel);
     setShowRenameModal(true);
   };
 
   const handleDelete = (channel) => {
-    console.log('🗑️ Delete channel:', channel);
     setSelectedChannel(channel);
     setShowDeleteModal(true);
   };
@@ -134,15 +118,11 @@ function ChatPage() {
     inputRef.current?.focus();
   }, [currentChannelId]);
 
-  // Если нет токена — редирект
   if (!token) {
-    console.log('🚫 No token, redirecting to login');
     return <Navigate to="/login" replace />;
   }
 
-  // Если загрузка
-  if (isLoading) {
-    console.log('⏳ Loading...');
+  if (isLoading && channels.length === 0) {
     return (
       <div className="container mt-5 text-center">
         <h3>Загрузка...</h3>
@@ -150,9 +130,7 @@ function ChatPage() {
     );
   }
 
-  // Если ошибка
   if (error) {
-    console.log('❌ Error:', error);
     return (
       <div className="container mt-5">
         <div className="alert alert-danger" role="alert">
@@ -165,89 +143,97 @@ function ChatPage() {
     );
   }
 
-  // Если каналы не загрузились
-  if (!channels || channels.length === 0) {
-    console.log('📡 No channels loaded yet');
-    return (
-      <div className="container mt-5 text-center">
-        <h3>Нет каналов</h3>
-        <p className="text-muted">Попробуйте обновить страницу</p>
-        <button 
-          className="btn btn-primary mt-3" 
-          onClick={() => {
-            console.log('🔄 Manual reload clicked');
-            dispatch(fetchChannels());
-          }}
-        >
-          Загрузить каналы
-        </button>
-      </div>
-    );
-  }
-
-  console.log('✅ Rendering chat with', channels.length, 'channels');
-
   const currentChannel = channels.find((c) => c.id === currentChannelId);
 
   return (
-    <div className="container-fluid vh-100 d-flex flex-column">
+    <div className={`container-fluid vh-100 d-flex flex-column ${isDark ? 'bg-dark text-white' : 'bg-light'}`}>
+      {/* Хедер */}
+      <nav className={`navbar ${isDark ? 'navbar-dark bg-dark' : 'navbar-light bg-white'} border-bottom`}>
+        <div className="container-fluid">
+          <Link to="/" className="navbar-brand d-flex align-items-center gap-2">
+            <span>Hexlet Chat</span>
+          </Link>
+          <div className="d-flex align-items-center gap-3">
+            <button
+              className="btn btn-outline-secondary btn-sm"
+              onClick={toggleTheme}
+              title={isDark ? 'Светлая тема' : 'Тёмная тема'}
+            >
+              {isDark ? '☀️' : '🌙'}
+            </button>
+            {user && (
+              <span className={isDark ? 'text-light' : 'text-muted'}>{user.username}</span>
+            )}
+            <button className="btn btn-outline-danger btn-sm" onClick={handleLogout}>
+              Выйти
+            </button>
+          </div>
+        </div>
+      </nav>
+
       <div className="row flex-grow-1">
-        <div className="col-3 bg-light p-3 border-end">
+        {/* Боковая панель */}
+        <div className={`col-3 p-3 border-end ${isDark ? 'bg-dark border-secondary' : 'bg-white'}`}>
           <div className="d-flex justify-content-between align-items-center mb-3">
-            <h5>Каналы</h5>
+            <h5 className={isDark ? 'text-light' : 'text-dark'}>Каналы</h5>
             <button 
               className="btn btn-primary btn-sm"
-              onClick={() => {
-                console.log('➕ Add channel button clicked');
-                setShowAddModal(true);
-              }}
+              onClick={() => setShowAddModal(true)}
             >
               +
             </button>
           </div>
           <ul className="list-unstyled">
-            {channels.map((channel) => (
-              <li key={channel.id} className="d-flex align-items-center mb-1">
-                <button
-                  className={`btn w-100 text-start ${
-                    currentChannelId === channel.id
-                      ? 'btn-primary'
-                      : 'btn-outline-secondary'
-                  }`}
-                  onClick={() => handleChannelSwitch(channel.id)}
-                >
-                  # {channel.name}
-                </button>
-                {currentChannelId === channel.id && (
-                  <ChannelMenu
-                    channel={channel}
-                    onRename={handleRename}
-                    onDelete={handleDelete}
-                  />
-                )}
-              </li>
-            ))}
+            {channels && channels.length > 0 ? (
+              channels.map((channel) => (
+                <li key={channel.id} className="d-flex align-items-center mb-1">
+                  <button
+                    className={`btn w-100 text-start ${
+                      currentChannelId === channel.id
+                        ? 'btn-primary'
+                        : isDark
+                        ? 'btn-outline-secondary text-light'
+                        : 'btn-outline-secondary text-dark'
+                    }`}
+                    onClick={() => handleChannelSwitch(channel.id)}
+                  >
+                    # {channel.name}
+                  </button>
+                  {currentChannelId === channel.id && (
+                    <ChannelMenu
+                      channel={channel}
+                      onRename={handleRename}
+                      onDelete={handleDelete}
+                    />
+                  )}
+                </li>
+              ))
+            ) : (
+              <li className={isDark ? 'text-secondary' : 'text-muted'}>Нет каналов</li>
+            )}
           </ul>
-          <hr />
+          <hr className={isDark ? 'border-secondary' : ''} />
           <div className="mb-2">
             <span className={`badge ${isConnected ? 'bg-success' : 'bg-danger'}`}>
               {isConnected ? '🟢 Online' : '🔴 Offline'}
             </span>
           </div>
-          <button className="btn btn-danger w-100" onClick={handleLogout}>
-            Выйти
-          </button>
         </div>
 
-        <div className="col-9 d-flex flex-column p-0">
-          <div className="p-3 border-bottom bg-white d-flex justify-content-between align-items-center">
-            <h5>
-              # {currentChannel?.name || 'Выберите канал'}
+        {/* Основная область чата */}
+        <div className={`col-9 d-flex flex-column p-0 ${isDark ? 'bg-dark' : 'bg-light'}`}>
+          {/* Заголовок канала */}
+          <div className={`p-3 border-bottom ${isDark ? 'bg-dark border-secondary text-light' : 'bg-white text-dark'}`}>
+            <h5 className="d-flex justify-content-between align-items-center">
+              <span># {currentChannel?.name || 'Выберите канал'}</span>
+              <span className={isDark ? 'text-secondary' : 'text-muted small'}>
+                {filteredMessages.length} сообщений
+              </span>
             </h5>
-            <span className="text-muted small">{filteredMessages.length} сообщений</span>
           </div>
 
-          <div className="flex-grow-1 p-3 overflow-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+          {/* Список сообщений */}
+          <div className={`flex-grow-1 p-3 overflow-auto ${isDark ? 'bg-dark text-light' : 'bg-light text-dark'}`} style={{ maxHeight: 'calc(100vh - 200px)' }}>
             {filteredMessages.length > 0 ? (
               filteredMessages.map((msg) => (
                 <div key={msg.id} className="mb-2">
@@ -255,17 +241,18 @@ function ChatPage() {
                 </div>
               ))
             ) : (
-              <p className="text-muted">Нет сообщений в этом канале</p>
+              <p className={isDark ? 'text-secondary' : 'text-muted'}>Нет сообщений в этом канале</p>
             )}
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="p-3 border-top bg-white">
+          {/* Поле ввода сообщения */}
+          <div className={`p-3 border-top ${isDark ? 'bg-dark border-secondary' : 'bg-white'}`}>
             <form onSubmit={handleSendMessage} className="d-flex gap-2">
               <input
                 ref={inputRef}
                 type="text"
-                className="form-control"
+                className={`form-control ${isDark ? 'bg-dark text-light border-secondary' : 'bg-white text-dark border'}`}
                 placeholder="Введите сообщение..."
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
