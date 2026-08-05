@@ -28,6 +28,8 @@ export default {
       usernamePlaceholder: 'Введите ник',
       passwordPlaceholder: 'Введите пароль',
       confirmPasswordPlaceholder: 'Подтвердите пароль',
+      loginSuccess: 'Добро пожаловать, {{username}}!',
+      signupSuccess: 'Регистрация прошла успешно!',
     },
     validation: {
       required: 'Обязательное поле',
@@ -66,6 +68,9 @@ export default {
       messagesCount_2: '{{count}} сообщения',
       messagesCount_3: '{{count}} сообщения',
       messagesCount_4: '{{count}} сообщения',
+      createSuccess: 'Канал #{{name}} создан!',
+      renameSuccess: 'Канал переименован в #{{name}}!',
+      deleteSuccess: 'Канал #{{name}} удалён!',
     },
     messages: {
       placeholder: 'Введите сообщение...',
@@ -73,6 +78,8 @@ export default {
       noMessages: 'Нет сообщений в этом канале',
       offline: '⚠️ Режим офлайн — сообщения могут задерживаться',
       newMessage: '📨 Новое сообщение',
+      sendSuccess: 'Сообщение отправлено!',
+      sendError: 'Не удалось отправить сообщение',
     },
     errors: {
       loadChannels: 'Ошибка загрузки каналов',
@@ -84,6 +91,7 @@ export default {
       loadData: 'Ошибка загрузки данных',
       retry: 'Попробовать снова',
       tryAgain: 'Попробуйте обновить страницу',
+      networkError: 'Ошибка сети. Проверьте подключение.',
     },
     notFound: {
       title: '404',

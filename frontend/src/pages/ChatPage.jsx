@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { Navigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 import { logout } from '../slices/authSlice';
 import {
   fetchChannels,
@@ -46,7 +47,8 @@ function ChatPage() {
 
   const handleLogout = useCallback(() => {
     dispatch(logout());
-  }, [dispatch]);
+    toast.info(t('header.logout'));
+  }, [dispatch, t]);
 
   const handleChannelSwitch = useCallback((channelId) => {
     dispatch(setCurrentChannel(channelId));
@@ -77,10 +79,11 @@ function ChatPage() {
         dispatch(setMessages(messagesData));
       } catch (err) {
         console.error('❌ Error fetching messages:', err);
+        toast.error(t('errors.loadMessages'));
       }
     };
     fetchMessages();
-  }, [dispatch, currentChannelId]);
+  }, [dispatch, currentChannelId, t]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -96,9 +99,10 @@ function ChatPage() {
       const response = await axios.post('/messages', messageData);
       console.log('📤 Message sent:', response.data);
       setNewMessage('');
+      toast.success(t('messages.sendSuccess'));
     } catch (err) {
       console.error('❌ Error sending message:', err);
-      alert(t('errors.sendMessage'));
+      toast.error(t('errors.sendMessage'));
     }
   };
 

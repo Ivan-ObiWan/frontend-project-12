@@ -4,6 +4,7 @@ import * as Yup from 'yup';
 import { Link, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 import axios from 'axios';
 import { setAuthData, setError, setLoading } from '../slices/authSlice';
 
@@ -54,13 +55,17 @@ function SignupPage() {
 
       const { token, user } = response.data;
       dispatch(setAuthData({ token, user }));
+      toast.success(t('auth.signupSuccess'));
       setSubmitting(false);
     } catch (err) {
       if (err.response?.status === 409) {
-        dispatch(setError(t('auth.userExists')));
+        const message = t('auth.userExists');
+        dispatch(setError(message));
+        toast.error(message);
       } else {
         const errorMessage = err.response?.data?.message || t('auth.signupError');
         dispatch(setError(errorMessage));
+        toast.error(errorMessage);
       }
       setSubmitting(false);
     }

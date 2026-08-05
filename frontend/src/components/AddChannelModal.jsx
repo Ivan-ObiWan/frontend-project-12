@@ -4,6 +4,7 @@ import { Formik, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 import { addChannel } from '../slices/channelsSlice';
 
 function AddChannelModal({ show, onHide }) {
@@ -33,10 +34,12 @@ function AddChannelModal({ show, onHide }) {
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
       await dispatch(addChannel({ name: values.name })).unwrap();
+      toast.success(t('channels.createSuccess', { name: values.name }));
       resetForm();
       onHide();
     } catch (error) {
       console.error('❌ Error adding channel:', error);
+      toast.error(t('errors.createChannel'));
     } finally {
       setSubmitting(false);
     }

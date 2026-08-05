@@ -3,15 +3,13 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Link, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 import axios from 'axios';
 import { setAuthData, setError, setLoading } from '../slices/authSlice';
 
-const LoginSchema = Yup.object().shape({
-  username: Yup.string().required('Обязательное поле'),
-  password: Yup.string().required('Обязательное поле'),
-});
-
 function LoginPage() {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { token, error, isLoading } = useSelector((state) => state.auth);
   const inputRef = useRef(null);
@@ -32,6 +30,11 @@ function LoginPage() {
     return <Navigate to="/" replace />;
   }
 
+  const LoginSchema = Yup.object().shape({
+    username: Yup.string().required(t('validation.required')),
+    password: Yup.string().required(t('validation.required')),
+  });
+
   const handleSubmit = async (values, { setSubmitting }) => {
     dispatch(setLoading());
     
@@ -43,10 +46,12 @@ function LoginPage() {
 
       const { token, user } = response.data;
       dispatch(setAuthData({ token, user }));
+      toast.success(t('auth.loginSuccess', { username: user.username }));
       setSubmitting(false);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Ошибка авторизации';
+      const errorMessage = err.response?.data?.message || t('auth.loginError');
       dispatch(setError(errorMessage));
+      toast.error(errorMessage);
       setSubmitting(false);
     }
   };
@@ -57,7 +62,6 @@ function LoginPage() {
       position: 'relative',
       overflow: 'hidden',
     }}>
-      {/* Фоновое изображение - на весь экран */}
       <div style={{
         position: 'fixed',
         top: 0,
@@ -73,7 +77,6 @@ function LoginPage() {
       }} />
       
       <div className="container" style={{ maxWidth: '480px', position: 'relative', zIndex: 1 }}>
-        {/* Баннер с изображением - больше */}
         <div className="text-center mb-4">
           <img 
             src="/chat-banner.jpg" 
@@ -95,7 +98,7 @@ function LoginPage() {
           textShadow: '0 4px 20px rgba(0,0,0,0.8)',
           letterSpacing: '2px',
         }}>
-          Hexlet Chat
+          {t('app.title')}
         </h1>
         
         <div className="card bg-dark bg-opacity-90 border-0 shadow-2xl" style={{ 
@@ -109,7 +112,7 @@ function LoginPage() {
               fontSize: '1.8rem',
               letterSpacing: '1px',
             }}>
-              Войти
+              {t('auth.loginTitle')}
             </h2>
             
             <Formik
@@ -126,13 +129,13 @@ function LoginPage() {
                   )}
 
                   <div className="mb-3">
-                    <label htmlFor="username" className="form-label text-light-50">Ваш ник</label>
+                    <label htmlFor="username" className="form-label text-light-50">{t('auth.username')}</label>
                     <Field
                       type="text"
                       name="username"
                       id="username"
-                      className="form-control bg-dark-800 text-light border-dark-700"
-                      placeholder="Введите ник"
+                      className="form-control"
+                      placeholder={t('auth.usernamePlaceholder')}
                       innerRef={inputRef}
                       disabled={isSubmitting || isLoading}
                       style={{
@@ -145,13 +148,13 @@ function LoginPage() {
                   </div>
 
                   <div className="mb-3">
-                    <label htmlFor="password" className="form-label text-light-50">Пароль</label>
+                    <label htmlFor="password" className="form-label text-light-50">{t('auth.password')}</label>
                     <Field
                       type="password"
                       name="password"
                       id="password"
                       className="form-control"
-                      placeholder="Введите пароль"
+                      placeholder={t('auth.passwordPlaceholder')}
                       disabled={isSubmitting || isLoading}
                       style={{
                         backgroundColor: 'rgba(20,20,30,0.8)',
@@ -173,14 +176,14 @@ function LoginPage() {
                       border: 'none',
                     }}
                   >
-                    {isLoading ? 'Загрузка...' : 'Войти'}
+                    {isLoading ? t('auth.loading') : t('auth.loginButton')}
                   </button>
                 </Form>
               )}
             </Formik>
             
             <p className="mt-3 text-center text-light-50" style={{ color: 'rgba(255,255,255,0.6)' }}>
-              Нет аккаунта? <Link to="/signup" className="text-primary text-decoration-none fw-bold">Регистрация</Link>
+              {t('auth.noAccount')} <Link to="/signup" className="text-primary text-decoration-none fw-bold">{t('auth.signup')}</Link>
             </p>
           </div>
         </div>

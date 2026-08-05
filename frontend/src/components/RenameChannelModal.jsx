@@ -4,6 +4,7 @@ import { Formik, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'react-toastify';
 import { renameChannel } from '../slices/channelsSlice';
 
 function RenameChannelModal({ show, onHide, channel }) {
@@ -35,9 +36,11 @@ function RenameChannelModal({ show, onHide, channel }) {
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
       await dispatch(renameChannel({ id: channel.id, name: values.name })).unwrap();
+      toast.success(t('channels.renameSuccess', { name: values.name }));
       onHide();
     } catch (error) {
       console.error('❌ Error renaming channel:', error);
+      toast.error(t('errors.renameChannel'));
     } finally {
       setSubmitting(false);
     }
