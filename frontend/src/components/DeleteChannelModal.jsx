@@ -1,9 +1,11 @@
 import React from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { removeChannel } from '../slices/channelsSlice';
 
 function DeleteChannelModal({ show, onHide, channel }) {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { isLoading } = useSelector((state) => state.channels);
 
@@ -21,22 +23,22 @@ function DeleteChannelModal({ show, onHide, channel }) {
   return (
     <Modal show={show} onHide={onHide} centered>
       <Modal.Header closeButton>
-        <Modal.Title>Удалить канал</Modal.Title>
+        <Modal.Title>{t('channels.delete')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <p>Вы уверены, что хотите удалить канал <strong>#{channel.name}</strong>?</p>
-        <p className="text-muted small">Все сообщения в этом канале будут удалены.</p>
+        <p>{t('channels.deleteConfirm', { name: channel.name })}</p>
+        <p className="text-muted small">{t('channels.deleteWarning')}</p>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={onHide} disabled={isLoading}>
-          Отменить
+          {t('channels.cancel')}
         </Button>
         <Button
           variant="danger"
           onClick={handleDelete}
           disabled={isLoading}
         >
-          {isLoading ? 'Удаление...' : 'Удалить'}
+          {isLoading ? t('auth.loading') : t('channels.deleteButton')}
         </Button>
       </Modal.Footer>
     </Modal>

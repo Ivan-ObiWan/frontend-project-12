@@ -3,24 +3,12 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { Link, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { setAuthData, setError, setLoading } from '../slices/authSlice';
 
-const SignupSchema = Yup.object().shape({
-  username: Yup.string()
-    .required('Обязательное поле')
-    .min(3, 'От 3 до 20 символов')
-    .max(20, 'От 3 до 20 символов')
-    .matches(/^[a-zA-Z0-9а-яА-Я-]+$/, 'Только буквы, цифры и дефис'),
-  password: Yup.string()
-    .required('Обязательное поле')
-    .min(6, 'Не менее 6 символов'),
-  confirmPassword: Yup.string()
-    .required('Обязательное поле')
-    .oneOf([Yup.ref('password')], 'Пароли должны совпадать'),
-});
-
 function SignupPage() {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { token, error, isLoading } = useSelector((state) => state.auth);
   const inputRef = useRef(null);
@@ -41,6 +29,20 @@ function SignupPage() {
     return <Navigate to="/" replace />;
   }
 
+  const SignupSchema = Yup.object().shape({
+    username: Yup.string()
+      .required(t('validation.required'))
+      .min(3, t('validation.minLength', { count: 3, max: 20 }))
+      .max(20, t('validation.maxLength', { min: 3, count: 20 }))
+      .matches(/^[a-zA-Z0-9а-яА-Я-]+$/, t('validation.usernameChars')),
+    password: Yup.string()
+      .required(t('validation.required'))
+      .min(6, t('validation.minLengthPassword', { count: 6 })),
+    confirmPassword: Yup.string()
+      .required(t('validation.required'))
+      .oneOf([Yup.ref('password')], t('validation.passwordMatch')),
+  });
+
   const handleSubmit = async (values, { setSubmitting }) => {
     dispatch(setLoading());
     
@@ -55,9 +57,9 @@ function SignupPage() {
       setSubmitting(false);
     } catch (err) {
       if (err.response?.status === 409) {
-        dispatch(setError('Пользователь с таким именем уже существует'));
+        dispatch(setError(t('auth.userExists')));
       } else {
-        const errorMessage = err.response?.data?.message || 'Ошибка регистрации';
+        const errorMessage = err.response?.data?.message || t('auth.signupError');
         dispatch(setError(errorMessage));
       }
       setSubmitting(false);
@@ -65,77 +67,155 @@ function SignupPage() {
   };
 
   return (
-    <div className="container mt-5" style={{ maxWidth: '400px' }}>
-      <h1 className="text-center mb-4">Hexlet Chat</h1>
-      <h2 className="text-center mb-4">Регистрация</h2>
+    <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{
+      background: '#0a0a0f',
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundImage: `url('/chat-banner.jpg')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        opacity: 0.15,
+        zIndex: 0,
+        transform: 'scale(1.1)',
+      }} />
       
-      <Formik
-        initialValues={{ username: '', password: '', confirmPassword: '' }}
-        validationSchema={SignupSchema}
-        onSubmit={handleSubmit}
-      >
-        {({ isSubmitting }) => (
-          <Form>
-            {error && (
-              <div className="alert alert-danger" role="alert">
-                {error}
-              </div>
-            )}
+      <div className="container" style={{ maxWidth: '480px', position: 'relative', zIndex: 1 }}>
+        <div className="text-center mb-4">
+          <img 
+            src="/chat-banner.jpg" 
+            alt="Hexlet Chat" 
+            className="img-fluid rounded-4 shadow-xl"
+            style={{ 
+              width: '100%',
+              maxHeight: '280px',
+              objectFit: 'cover',
+              border: '2px solid rgba(255,255,255,0.08)',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.8)',
+            }}
+          />
+        </div>
 
-            <div className="mb-3">
-              <label htmlFor="username" className="form-label">Имя пользователя</label>
-              <Field
-                type="text"
-                name="username"
-                id="username"
-                className="form-control"
-                placeholder="Введите имя пользователя"
-                innerRef={inputRef}
-                disabled={isSubmitting || isLoading}
-              />
-              <ErrorMessage name="username" component="div" className="text-danger" />
-            </div>
-
-            <div className="mb-3">
-              <label htmlFor="password" className="form-label">Пароль</label>
-              <Field
-                type="password"
-                name="password"
-                id="password"
-                className="form-control"
-                placeholder="Введите пароль"
-                disabled={isSubmitting || isLoading}
-              />
-              <ErrorMessage name="password" component="div" className="text-danger" />
-            </div>
-
-            <div className="mb-3">
-              <label htmlFor="confirmPassword" className="form-label">Подтверждение пароля</label>
-              <Field
-                type="password"
-                name="confirmPassword"
-                id="confirmPassword"
-                className="form-control"
-                placeholder="Подтвердите пароль"
-                disabled={isSubmitting || isLoading}
-              />
-              <ErrorMessage name="confirmPassword" component="div" className="text-danger" />
-            </div>
-
-            <button
-              type="submit"
-              className="btn btn-primary w-100"
-              disabled={isSubmitting || isLoading}
+        <h1 className="text-center text-white mb-4" style={{ 
+          fontWeight: 300, 
+          fontSize: '2.8rem', 
+          textShadow: '0 4px 20px rgba(0,0,0,0.8)',
+          letterSpacing: '2px',
+        }}>
+          {t('app.title')}
+        </h1>
+        
+        <div className="card bg-dark bg-opacity-90 border-0 shadow-2xl" style={{ 
+          backdropFilter: 'blur(12px)',
+          boxShadow: '0 25px 80px rgba(0,0,0,0.9)',
+          borderRadius: '16px',
+        }}>
+          <div className="card-body p-5">
+            <h2 className="text-center text-white mb-4" style={{ 
+              fontWeight: 300, 
+              fontSize: '1.8rem',
+              letterSpacing: '1px',
+            }}>
+              {t('auth.signupTitle')}
+            </h2>
+            
+            <Formik
+              initialValues={{ username: '', password: '', confirmPassword: '' }}
+              validationSchema={SignupSchema}
+              onSubmit={handleSubmit}
             >
-              {isLoading ? 'Регистрация...' : 'Зарегистрироваться'}
-            </button>
-          </Form>
-        )}
-      </Formik>
-      
-      <p className="mt-3 text-center">
-        Уже есть аккаунт? <Link to="/login">Войти</Link>
-      </p>
+              {({ isSubmitting }) => (
+                <Form>
+                  {error && (
+                    <div className="alert alert-danger" role="alert">
+                      {error}
+                    </div>
+                  )}
+
+                  <div className="mb-3">
+                    <label htmlFor="username" className="form-label text-light-50">{t('auth.username')}</label>
+                    <Field
+                      type="text"
+                      name="username"
+                      id="username"
+                      className="form-control"
+                      placeholder={t('auth.usernamePlaceholder')}
+                      innerRef={inputRef}
+                      disabled={isSubmitting || isLoading}
+                      style={{
+                        backgroundColor: 'rgba(20,20,30,0.8)',
+                        borderColor: 'rgba(255,255,255,0.08)',
+                        color: '#fff',
+                      }}
+                    />
+                    <ErrorMessage name="username" component="div" className="text-danger" />
+                  </div>
+
+                  <div className="mb-3">
+                    <label htmlFor="password" className="form-label text-light-50">{t('auth.password')}</label>
+                    <Field
+                      type="password"
+                      name="password"
+                      id="password"
+                      className="form-control"
+                      placeholder={t('auth.passwordPlaceholder')}
+                      disabled={isSubmitting || isLoading}
+                      style={{
+                        backgroundColor: 'rgba(20,20,30,0.8)',
+                        borderColor: 'rgba(255,255,255,0.08)',
+                        color: '#fff',
+                      }}
+                    />
+                    <ErrorMessage name="password" component="div" className="text-danger" />
+                  </div>
+
+                  <div className="mb-3">
+                    <label htmlFor="confirmPassword" className="form-label text-light-50">{t('auth.confirmPassword')}</label>
+                    <Field
+                      type="password"
+                      name="confirmPassword"
+                      id="confirmPassword"
+                      className="form-control"
+                      placeholder={t('auth.confirmPasswordPlaceholder')}
+                      disabled={isSubmitting || isLoading}
+                      style={{
+                        backgroundColor: 'rgba(20,20,30,0.8)',
+                        borderColor: 'rgba(255,255,255,0.08)',
+                        color: '#fff',
+                      }}
+                    />
+                    <ErrorMessage name="confirmPassword" component="div" className="text-danger" />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="btn btn-primary w-100 py-2"
+                    disabled={isSubmitting || isLoading}
+                    style={{ 
+                      fontWeight: 500,
+                      borderRadius: '8px',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      border: 'none',
+                    }}
+                  >
+                    {isLoading ? t('auth.loading') : t('auth.signupButton')}
+                  </button>
+                </Form>
+              )}
+            </Formik>
+            
+            <p className="mt-3 text-center text-light-50" style={{ color: 'rgba(255,255,255,0.6)' }}>
+              {t('auth.hasAccount')} <Link to="/login" className="text-primary text-decoration-none fw-bold">{t('auth.login')}</Link>
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

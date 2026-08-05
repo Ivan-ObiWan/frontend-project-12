@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Dropdown } from 'react-bootstrap';
+import { useTranslation } from 'react-i18next';
 
 function ChannelMenu({ channel, onRename, onDelete }) {
+  const { t } = useTranslation();
   const isDefault = channel.name === 'general';
 
   return (
@@ -17,18 +19,18 @@ function ChannelMenu({ channel, onRename, onDelete }) {
 
       <Dropdown.Menu>
         <Dropdown.Item onClick={() => onRename(channel)}>
-           Переименовать...
+          ✏️ {t('channels.rename')}
         </Dropdown.Item>
         <Dropdown.Item
           onClick={() => onDelete(channel)}
           disabled={isDefault}
           className={isDefault ? 'text-muted' : 'text-danger'}
         >
-          🗑️ Удалить
+          🗑️ {t('channels.delete')}
         </Dropdown.Item>
         {isDefault && (
           <Dropdown.Item disabled className="text-muted small">
-            Нельзя удалить канал #general
+            {t('channels.deleteDisabled')}
           </Dropdown.Item>
         )}
       </Dropdown.Menu>
