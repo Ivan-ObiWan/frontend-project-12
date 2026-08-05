@@ -26,7 +26,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             pauseOnFocusLoss
             draggable
             pauseOnHover
-            theme="dark"
+            theme={localStorage.getItem('theme') === 'dark' ? 'dark' : 'light'}
           />
         </BrowserRouter>
       </I18nextProvider>

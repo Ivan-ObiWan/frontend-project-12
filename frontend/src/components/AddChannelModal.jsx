@@ -6,12 +6,17 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { addChannel } from '../slices/channelsSlice';
+import { hasProfanity } from '../utils/filter';
 
 function AddChannelModal({ show, onHide }) {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const { channels, isLoading } = useSelector((state) => state.channels);
   const inputRef = useRef(null);
+
+  const isNetworkError = (err) => {
+    return !err.response || err.code === 'ERR_NETWORK' || err.message === 'Network Error';
+  };
 
   useEffect(() => {
     if (show) {
@@ -28,6 +33,9 @@ function AddChannelModal({ show, onHide }) {
       .test('unique', t('validation.channelName.unique'), function (value) {
         const currentChannels = this.options.context?.channels || [];
         return !currentChannels.some((c) => c.name === value);
+      })
+      .test('profanity', 'Название канала содержит нецензурные слова', function (value) {
+        return !hasProfanity(value);
       }),
   });
 
@@ -39,7 +47,11 @@ function AddChannelModal({ show, onHide }) {
       onHide();
     } catch (error) {
       console.error('❌ Error adding channel:', error);
-      toast.error(t('errors.createChannel'));
+      if (isNetworkError(error)) {
+        toast.error(t('errors.networkError'));
+      } else {
+        toast.error(t('errors.createChannel'));
+      }
     } finally {
       setSubmitting(false);
     }

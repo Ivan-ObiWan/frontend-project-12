@@ -16,6 +16,7 @@ import AddChannelModal from '../components/AddChannelModal';
 import RenameChannelModal from '../components/RenameChannelModal';
 import DeleteChannelModal from '../components/DeleteChannelModal';
 import ChannelMenu from '../components/ChannelMenu';
+import { filterText, hasProfanity } from '../utils/filter';
 
 function ChatPage() {
   const { t } = useTranslation();
@@ -60,15 +61,32 @@ function ChatPage() {
     localStorage.setItem('theme', newTheme ? 'dark' : 'light');
   };
 
+  const isNetworkError = (err) => {
+    return !err.response || err.code === 'ERR_NETWORK' || err.message === 'Network Error';
+  };
+
   useEffect(() => {
     document.documentElement.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
   }, [isDark]);
 
   useEffect(() => {
-    if (token) {
-      dispatch(fetchChannels());
-    }
-  }, [dispatch, token]);
+    const loadChannels = async () => {
+      if (!token) return;
+      
+      try {
+        await dispatch(fetchChannels()).unwrap();
+      } catch (err) {
+        console.error('❌ Error fetching channels:', err);
+        if (isNetworkError(err)) {
+          toast.error(t('errors.networkError'));
+        } else {
+          toast.error(t('errors.loadChannels'));
+        }
+      }
+    };
+    
+    loadChannels();
+  }, [dispatch, token, t]);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -76,10 +94,19 @@ function ChatPage() {
       try {
         const response = await axios.get('/messages');
         const messagesData = response.data.data || [];
-        dispatch(setMessages(messagesData));
+
+        const filteredMessagesData = messagesData.map((msg) => ({
+          ...msg,
+          content: filterText(msg.content),
+        }));
+        dispatch(setMessages(filteredMessagesData));
       } catch (err) {
         console.error('❌ Error fetching messages:', err);
-        toast.error(t('errors.loadMessages'));
+        if (isNetworkError(err)) {
+          toast.error(t('errors.networkError'));
+        } else {
+          toast.error(t('errors.loadMessages'));
+        }
       }
     };
     fetchMessages();
@@ -89,6 +116,12 @@ function ChatPage() {
     e.preventDefault();
     
     if (!newMessage.trim() || !currentChannelId) return;
+
+    if (hasProfanity(newMessage)) {
+      toast.warning('Сообщение содержит нецензурные слова и было отфильтровано');
+      setNewMessage('');
+      return;
+    }
 
     const messageData = {
       channelId: currentChannelId,
@@ -102,7 +135,11 @@ function ChatPage() {
       toast.success(t('messages.sendSuccess'));
     } catch (err) {
       console.error('❌ Error sending message:', err);
-      toast.error(t('errors.sendMessage'));
+      if (isNetworkError(err)) {
+        toast.error(t('errors.networkError'));
+      } else {
+        toast.error(t('errors.sendMessage'));
+      }
     }
   };
 

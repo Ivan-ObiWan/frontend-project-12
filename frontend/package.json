@@ -15,6 +15,7 @@
     "bootstrap": "^5.3.8",
     "formik": "^2.4.9",
     "i18next": "^26.3.6",
+    "leo-profanity": "^1.9.0",
     "react": "^19.2.7",
     "react-bootstrap": "^2.10.10",
     "react-dom": "^19.2.7",

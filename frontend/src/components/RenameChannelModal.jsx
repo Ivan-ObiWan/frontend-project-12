@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import { renameChannel } from '../slices/channelsSlice';
+import { hasProfanity } from '../utils/filter';
 
 function RenameChannelModal({ show, onHide, channel }) {
   const { t } = useTranslation();
@@ -30,6 +31,9 @@ function RenameChannelModal({ show, onHide, channel }) {
       .test('unique', t('validation.channelName.unique'), function (value) {
         const currentChannels = this.options.context?.channels || [];
         return !currentChannels.some((c) => c.name === value && c.id !== channel.id);
+      })
+      .test('profanity', 'Название канала содержит нецензурные слова', function (value) {
+        return !hasProfanity(value);
       }),
   });
 
