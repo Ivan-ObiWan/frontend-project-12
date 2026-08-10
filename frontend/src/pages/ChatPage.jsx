@@ -12,10 +12,12 @@ import {
 import { setMessages, addMessage } from '../slices/messagesSlice';
 import axios from '../api/axios';
 import useSocket from '../hooks/useSocket';
+import rollbar from '../rollbar.js';
 import AddChannelModal from '../components/AddChannelModal';
 import RenameChannelModal from '../components/RenameChannelModal';
 import DeleteChannelModal from '../components/DeleteChannelModal';
 import ChannelMenu from '../components/ChannelMenu';
+import TestRollbar from '../components/TestRollbar.jsx';
 import { filterText, hasProfanity } from '../utils/filter';
 
 function ChatPage() {
@@ -77,6 +79,7 @@ function ChatPage() {
         await dispatch(fetchChannels()).unwrap();
       } catch (err) {
         console.error('❌ Error fetching channels:', err);
+        rollbar.error('Error fetching channels', err);
         if (isNetworkError(err)) {
           toast.error(t('errors.networkError'));
         } else {
@@ -94,7 +97,6 @@ function ChatPage() {
       try {
         const response = await axios.get('/messages');
         const messagesData = response.data.data || [];
-
         const filteredMessagesData = messagesData.map((msg) => ({
           ...msg,
           content: filterText(msg.content),
@@ -102,6 +104,7 @@ function ChatPage() {
         dispatch(setMessages(filteredMessagesData));
       } catch (err) {
         console.error('❌ Error fetching messages:', err);
+        rollbar.error('Error fetching messages', err);
         if (isNetworkError(err)) {
           toast.error(t('errors.networkError'));
         } else {
@@ -119,6 +122,7 @@ function ChatPage() {
 
     if (hasProfanity(newMessage)) {
       toast.warning('Сообщение содержит нецензурные слова и было отфильтровано');
+      rollbar.info('Profanity blocked', { message: newMessage });
       setNewMessage('');
       return;
     }
@@ -135,6 +139,7 @@ function ChatPage() {
       toast.success(t('messages.sendSuccess'));
     } catch (err) {
       console.error('❌ Error sending message:', err);
+      rollbar.error('Error sending message', err);
       if (isNetworkError(err)) {
         toast.error(t('errors.networkError'));
       } else {
@@ -203,6 +208,7 @@ function ChatPage() {
             >
               {isDark ? '☀️' : '🌙'}
             </button>
+            <TestRollbar />
             {user && (
               <span className={isDark ? 'text-light' : 'text-muted'}>{user.username}</span>
             )}
