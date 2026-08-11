@@ -3,6 +3,9 @@
 ### Hexlet tests and linter status:
 [![Actions Status](https://github.com/Ivan-ObiWan/frontend-project-12/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/Ivan-ObiWan/frontend-project-12/actions)
 
+### GitHub Actions:
+[![GitHub Actions](https://github.com/Ivan-ObiWan/frontend-project-12/actions/workflows/github-actions.yml/badge.svg)](https://github.com/Ivan-ObiWan/frontend-project-12/actions/workflows/github-actions.yml)
+
 ## Описание
 
 **Hexlet Chat** — это упрощенная версия Slack Chat, учебный проект, разработанный в рамках курса Hexlet. Это React/Redux приложение, работающее в режиме реального времени.
