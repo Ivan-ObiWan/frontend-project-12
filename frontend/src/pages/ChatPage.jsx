@@ -226,6 +226,7 @@ function ChatPage() {
             <button 
               className="btn btn-primary btn-sm"
               onClick={() => setShowAddModal(true)}
+              aria-label={t('channels.add')}
             >
               +
             </button>
