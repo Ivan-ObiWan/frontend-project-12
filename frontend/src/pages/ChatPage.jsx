@@ -145,10 +145,13 @@ function ChatPage() {
     };
 
     try {
-      const response = await axios.post('/messages', messageData);
-      console.log('📤 Message sent:', response.data);
+      // Отправляем сообщение на сервер
+      await axios.post('/messages', messageData);
+      // Очищаем поле ввода
       setNewMessage('');
+      // Показываем уведомление об успешной отправке
       toast.success(t('messages.sendSuccess'));
+      // НЕ ДОБАВЛЯЕМ сообщение локально — оно придёт через WebSocket
     } catch (err) {
       console.error('❌ Error sending message:', err);
       rollbar.error('Error sending message', err);
