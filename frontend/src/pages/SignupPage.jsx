@@ -9,15 +9,12 @@ import axios from 'axios';
 import { setAuthData, setError, setLoading } from '../slices/authSlice';
 
 function SignupPage() {
-  console.log('🔍 SignupPage render');
-  
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const { token, error, isLoading } = useSelector((state) => state.auth);
   const inputRef = useRef(null);
 
   useEffect(() => {
-    console.log('🔍 SignupPage mounted');
     if (inputRef.current) {
       inputRef.current.focus();
     }
@@ -30,11 +27,8 @@ function SignupPage() {
   }, [dispatch]);
 
   if (token) {
-    console.log('🔍 Token exists, redirecting to /');
     return <Navigate to="/" replace />;
   }
-
-  console.log('🔍 Rendering SignupPage form');
 
   const SignupSchema = Yup.object().shape({
     username: Yup.string()
