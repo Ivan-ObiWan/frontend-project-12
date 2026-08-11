@@ -15,3 +15,9 @@ dev:
 
 test:
 	echo "No tests yet"
+
+lint:
+	cd frontend && npx eslint src --ext .js,.jsx || true
+
+lint-fix:
+	cd frontend && npx eslint src --ext .js,.jsx --fix || true

@@ -1,12 +1,9 @@
-import React from 'react';
 import { Dropdown } from 'react-bootstrap';
 import { useTranslation } from 'react-i18next';
 
 function ChannelMenu({ channel, onRename, onDelete }) {
   const { t } = useTranslation();
   const isDefault = channel.name === 'general';
-  
-  // Определяем тему из localStorage
   const isDark = localStorage.getItem('theme') === 'dark';
 
   return (

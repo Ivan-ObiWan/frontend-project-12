@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Navigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
@@ -9,7 +9,7 @@ import {
   setCurrentChannel,
   clearError,
 } from '../slices/channelsSlice';
-import { setMessages, addMessage } from '../slices/messagesSlice';
+import { setMessages } from '../slices/messagesSlice';
 import axios from '../api/axios';
 import useSocket from '../hooks/useSocket';
 import rollbar from '../rollbar.js';
@@ -17,7 +17,6 @@ import AddChannelModal from '../components/AddChannelModal';
 import RenameChannelModal from '../components/RenameChannelModal';
 import DeleteChannelModal from '../components/DeleteChannelModal';
 import ChannelMenu from '../components/ChannelMenu';
-import TestRollbar from '../components/TestRollbar.jsx';
 import { filterText, hasProfanity } from '../utils/filter';
 
 function ChatPage() {
@@ -48,7 +47,6 @@ function ChatPage() {
     return messages?.filter((msg) => msg.channelId === currentChannelId) || [];
   }, [messages, currentChannelId]);
 
-  // Отслеживаем изменение статуса подключения для Toast
   const prevConnectedRef = useRef(isConnected);
 
   useEffect(() => {
@@ -231,7 +229,6 @@ function ChatPage() {
                 </svg>
               )}
             </button>
-            <TestRollbar />
             {user && (
               <span className={isDark ? 'text-light' : 'text-muted'}>{user.username}</span>
             )}

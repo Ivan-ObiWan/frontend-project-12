@@ -1,5 +1,5 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { Provider as ReduxProvider } from 'react-redux';
 import { I18nextProvider } from 'react-i18next';
@@ -13,8 +13,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
 import './index.css';
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-
 const FallbackUI = () => (
   <div className="container mt-5 text-center">
     <h1>Что-то пошло не так</h1>
@@ -25,30 +23,37 @@ const FallbackUI = () => (
   </div>
 );
 
-root.render(
-  <React.StrictMode>
-    <ReduxProvider store={store}>
-      <I18nextProvider i18n={i18n}>
-        <RollbarProvider config={rollbarConfig}>
-          <ErrorBoundary fallbackUI={FallbackUI}>
-            <BrowserRouter>
-              <App />
-              <ToastContainer
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme={localStorage.getItem('theme') === 'dark' ? 'dark' : 'light'}
-              />
-            </BrowserRouter>
-          </ErrorBoundary>
-        </RollbarProvider>
-      </I18nextProvider>
-    </ReduxProvider>
-  </React.StrictMode>
-);
+function Root() {
+  return (
+    <StrictMode>
+      <ReduxProvider store={store}>
+        <I18nextProvider i18n={i18n}>
+          <RollbarProvider config={rollbarConfig}>
+            <ErrorBoundary fallbackUI={FallbackUI}>
+              <BrowserRouter>
+                <App />
+                <ToastContainer
+                  position="top-right"
+                  autoClose={3000}
+                  hideProgressBar={false}
+                  newestOnTop={false}
+                  closeOnClick
+                  rtl={false}
+                  pauseOnFocusLoss
+                  draggable
+                  pauseOnHover
+                  theme={localStorage.getItem('theme') === 'dark' ? 'dark' : 'light'}
+                />
+              </BrowserRouter>
+            </ErrorBoundary>
+          </RollbarProvider>
+        </I18nextProvider>
+      </ReduxProvider>
+    </StrictMode>
+  );
+}
+
+const root = createRoot(document.getElementById('root'));
+root.render(<Root />);
+
+export default Root;
