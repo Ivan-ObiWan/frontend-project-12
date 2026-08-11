@@ -11,6 +11,7 @@ import i18n from './i18n.js';
 import rollbarConfig from './rollbar.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-toastify/dist/ReactToastify.css';
+import './index.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 

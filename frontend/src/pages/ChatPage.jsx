@@ -48,6 +48,20 @@ function ChatPage() {
     return messages?.filter((msg) => msg.channelId === currentChannelId) || [];
   }, [messages, currentChannelId]);
 
+  // Отслеживаем изменение статуса подключения для Toast
+  const prevConnectedRef = useRef(isConnected);
+
+  useEffect(() => {
+    if (prevConnectedRef.current !== isConnected) {
+      if (!isConnected) {
+        toast.warning(t('messages.offline'));
+      } else {
+        toast.success('🟢 Соединение восстановлено!');
+      }
+      prevConnectedRef.current = isConnected;
+    }
+  }, [isConnected, t]);
+
   const handleLogout = useCallback(() => {
     dispatch(logout());
     toast.info(t('header.logout'));
@@ -200,33 +214,57 @@ function ChatPage() {
           <Link to="/" className="navbar-brand d-flex align-items-center gap-2">
             <span>{t('app.title')}</span>
           </Link>
-          <div className="d-flex align-items-center gap-3">
+          <div className="d-flex align-items-center gap-2">
             <button
-              className="btn btn-outline-secondary btn-sm"
+              className="btn btn-outline-secondary d-flex align-items-center justify-content-center rounded-circle"
               onClick={toggleTheme}
               title={t('header.themeToggle')}
+              style={{ width: '36px', height: '36px', padding: 0, border: '1px solid #6c757d' }}
             >
-              {isDark ? '☀️' : '🌙'}
+              {isDark ? (
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 8 13zM2.343 1.343a.5.5 0 0 1 .707 0l.707.707a.5.5 0 0 1-.707.707l-.707-.707a.5.5 0 0 1 0-.707zm10.607 10.607a.5.5 0 0 1 .707 0l.707.707a.5.5 0 0 1-.707.707l-.707-.707a.5.5 0 0 1 0-.707zM0 8a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1A.5.5 0 0 1 0 8zm13 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1A.5.5 0 0 1 13 8zM1.343 13.657a.5.5 0 0 1 0-.707l.707-.707a.5.5 0 0 1 .707.707l-.707.707a.5.5 0 0 1-.707 0zm10.607-10.607a.5.5 0 0 1 0-.707l.707-.707a.5.5 0 0 1 .707.707l-.707.707a.5.5 0 0 1-.707 0z"/>
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278zM4.858 1.311A7.269 7.269 0 0 0 1.025 7.71c0 4.02 3.279 7.276 7.319 7.276a7.316 7.316 0 0 0 5.205-2.162c-.337.042-.68.063-1.029.063-4.61 0-8.343-3.714-8.343-8.29 0-1.167.242-2.278.681-3.286z"/>
+                </svg>
+              )}
             </button>
             <TestRollbar />
             {user && (
               <span className={isDark ? 'text-light' : 'text-muted'}>{user.username}</span>
             )}
-            <button className="btn btn-outline-danger btn-sm" onClick={handleLogout}>
-              {t('header.logout')}
+            <button 
+              className="btn btn-outline-danger d-flex align-items-center justify-content-center rounded-circle"
+              onClick={handleLogout}
+              style={{ width: '36px', height: '36px', padding: 0 }}
+              title={t('header.logout')}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                <path fillRule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 1.5h-8A1.5 1.5 0 0 0 0 3v9a1.5 1.5 0 0 0 1.5 1.5h8A1.5 1.5 0 0 0 11 12.5v-2a.5.5 0 0 0-1 0v2z"/>
+                <path fillRule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+              </svg>
             </button>
           </div>
         </div>
       </nav>
 
       <div className="row flex-grow-1">
-        <div className={`col-3 p-3 border-end ${isDark ? 'bg-dark border-secondary' : 'bg-white'}`}>
+        <div 
+          className={`col-3 p-3 border-end ${
+            isDark 
+              ? 'bg-secondary bg-opacity-25 border-secondary' 
+              : 'bg-secondary bg-opacity-10'
+          }`}
+        >
           <div className="d-flex justify-content-between align-items-center mb-3">
-            <h5 className={isDark ? 'text-light' : 'text-dark'}>{t('channels.title')}</h5>
+            <h6 className={`mb-0 ${isDark ? 'text-secondary' : 'text-muted'}`}>{t('channels.title')}</h6>
             <button 
-              className="btn btn-primary btn-sm"
+              className="btn btn-link p-0 text-secondary"
               onClick={() => setShowAddModal(true)}
               aria-label={t('channels.add')}
+              style={{ textDecoration: 'none', fontSize: '18px' }}
             >
               +
             </button>
@@ -236,24 +274,32 @@ function ChatPage() {
               channels.map((channel) => (
                 <li key={channel.id} className="d-flex align-items-center mb-1">
                   <button
-                    className={`btn w-100 text-start ${
+                    className={`btn w-100 text-start d-flex justify-content-between align-items-center ${
                       currentChannelId === channel.id
-                        ? 'btn-primary'
-                        : isDark
-                        ? 'btn-outline-secondary text-light'
-                        : 'btn-outline-secondary text-dark'
+                        ? isDark ? 'bg-secondary text-light' : 'bg-secondary bg-opacity-25 text-dark'
+                        : isDark ? 'text-light' : 'text-dark'
                     }`}
                     onClick={() => handleChannelSwitch(channel.id)}
+                    style={{
+                      backgroundColor: currentChannelId === channel.id 
+                        ? (isDark ? '#3a3a4a' : '#e9ecef')
+                        : 'transparent',
+                      border: 'none',
+                      borderRadius: '4px',
+                      padding: '6px 12px',
+                      fontSize: '14px',
+                      fontWeight: currentChannelId === channel.id ? '500' : '400',
+                    }}
                   >
-                    # {channel.name}
+                    <span># {channel.name}</span>
+                    {currentChannelId === channel.id && (
+                      <ChannelMenu
+                        channel={channel}
+                        onRename={handleRename}
+                        onDelete={handleDelete}
+                      />
+                    )}
                   </button>
-                  {currentChannelId === channel.id && (
-                    <ChannelMenu
-                      channel={channel}
-                      onRename={handleRename}
-                      onDelete={handleDelete}
-                    />
-                  )}
                 </li>
               ))
             ) : (
@@ -261,11 +307,6 @@ function ChatPage() {
             )}
           </ul>
           <hr className={isDark ? 'border-secondary' : ''} />
-          <div className="mb-2">
-            <span className={`badge ${isConnected ? 'bg-success' : 'bg-danger'}`}>
-              {isConnected ? `🟢 ${t('header.online')}` : `🔴 ${t('header.offline')}`}
-            </span>
-          </div>
         </div>
 
         <div className={`col-9 d-flex flex-column p-0 ${isDark ? 'bg-dark' : 'bg-light'}`}>
@@ -304,15 +345,16 @@ function ChatPage() {
               />
               <button 
                 type="submit" 
-                className="btn btn-primary"
+                className="btn btn-primary d-flex align-items-center justify-content-center rounded-circle"
                 disabled={!newMessage.trim() || !currentChannelId}
+                style={{ width: '38px', height: '38px', padding: 0, flexShrink: 0 }}
+                title={t('messages.send')}
               >
-                {t('messages.send')}
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                  <path fillRule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                </svg>
               </button>
             </form>
-            {!isConnected && (
-              <small className="text-warning">{t('messages.offline')}</small>
-            )}
           </div>
         </div>
       </div>

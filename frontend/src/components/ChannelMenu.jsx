@@ -5,17 +5,32 @@ import { useTranslation } from 'react-i18next';
 function ChannelMenu({ channel, onRename, onDelete }) {
   const { t } = useTranslation();
   const isDefault = channel.name === 'general';
+  
+  // Определяем тему из localStorage
+  const isDark = localStorage.getItem('theme') === 'dark';
 
   return (
     <Dropdown>
       <Dropdown.Toggle
-        variant="link"
-        className="p-0 text-secondary"
+        as="span"
         id={`dropdown-${channel.id}`}
-        size="sm"
-        aria-label={t('channels.menu')}
+        className="p-0"
+        style={{
+          cursor: 'pointer',
+          fontSize: '16px',
+          padding: '0 4px',
+          background: 'none',
+          border: 'none',
+          lineHeight: 1,
+          letterSpacing: '1px',
+          color: isDark ? '#adb5bd' : '#6c757d',
+          opacity: 0.8,
+          transition: 'opacity 0.2s',
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+        onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
       >
-        ⋮
+        •••
       </Dropdown.Toggle>
 
       <Dropdown.Menu>
@@ -29,11 +44,6 @@ function ChannelMenu({ channel, onRename, onDelete }) {
         >
           {t('channels.delete')}
         </Dropdown.Item>
-        {isDefault && (
-          <Dropdown.Item disabled className="text-muted small">
-            {t('channels.deleteDisabled')}
-          </Dropdown.Item>
-        )}
       </Dropdown.Menu>
     </Dropdown>
   );

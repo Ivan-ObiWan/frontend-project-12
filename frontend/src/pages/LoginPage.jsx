@@ -51,7 +51,6 @@ function LoginPage() {
     } catch (err) {
       const errorMessage = err.response?.data?.message || t('auth.loginError');
       dispatch(setError(errorMessage));
-      toast.error(errorMessage);
       setSubmitting(false);
     }
   };
@@ -92,14 +91,17 @@ function LoginPage() {
           />
         </div>
 
-        <h1 className="text-center text-white mb-4" style={{ 
-          fontWeight: 300, 
-          fontSize: '2.8rem', 
-          textShadow: '0 4px 20px rgba(0,0,0,0.8)',
-          letterSpacing: '2px',
-        }}>
-          {t('app.title')}
-        </h1>
+        <Link to="/" className="text-decoration-none">
+          <h1 className="text-center text-white mb-4" style={{ 
+            fontWeight: 300, 
+            fontSize: '2.8rem', 
+            textShadow: '0 4px 20px rgba(0,0,0,0.8)',
+            letterSpacing: '2px',
+            cursor: 'pointer',
+          }}>
+            {t('app.title')}
+          </h1>
+        </Link>
         
         <div className="card bg-dark bg-opacity-90 border-0 shadow-2xl" style={{ 
           backdropFilter: 'blur(12px)',

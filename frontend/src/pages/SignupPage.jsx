@@ -61,11 +61,9 @@ function SignupPage() {
       if (err.response?.status === 409) {
         const message = t('auth.userExists');
         dispatch(setError(message));
-        toast.error(message);
       } else {
         const errorMessage = err.response?.data?.message || t('auth.signupError');
         dispatch(setError(errorMessage));
-        toast.error(errorMessage);
       }
       setSubmitting(false);
     }
