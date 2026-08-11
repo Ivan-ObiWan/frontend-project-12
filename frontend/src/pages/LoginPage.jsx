@@ -99,7 +99,7 @@ function LoginPage() {
             letterSpacing: '2px',
             cursor: 'pointer',
           }}>
-            {t('app.title')}
+            Hexlet Chat
           </h1>
         </Link>
         
@@ -114,7 +114,7 @@ function LoginPage() {
               fontSize: '1.8rem',
               letterSpacing: '1px',
             }}>
-              {t('auth.loginTitle')}
+              Войти
             </h2>
             
             <Formik
@@ -131,13 +131,13 @@ function LoginPage() {
                   )}
 
                   <div className="mb-3">
-                    <label htmlFor="username" className="form-label text-light-50">{t('auth.username')}</label>
+                    <label htmlFor="username" className="form-label text-light-50">Имя пользователя</label>
                     <Field
                       type="text"
                       name="username"
                       id="username"
                       className="form-control"
-                      placeholder={t('auth.usernamePlaceholder')}
+                      placeholder="Введите имя пользователя"
                       innerRef={inputRef}
                       disabled={isSubmitting || isLoading}
                       style={{
@@ -150,13 +150,13 @@ function LoginPage() {
                   </div>
 
                   <div className="mb-3">
-                    <label htmlFor="password" className="form-label text-light-50">{t('auth.password')}</label>
+                    <label htmlFor="password" className="form-label text-light-50">Пароль</label>
                     <Field
                       type="password"
                       name="password"
                       id="password"
                       className="form-control"
-                      placeholder={t('auth.passwordPlaceholder')}
+                      placeholder="Введите пароль"
                       disabled={isSubmitting || isLoading}
                       style={{
                         backgroundColor: 'rgba(20,20,30,0.8)',
@@ -178,14 +178,14 @@ function LoginPage() {
                       border: 'none',
                     }}
                   >
-                    {isLoading ? t('auth.loading') : t('auth.loginButton')}
+                    {isLoading ? 'Загрузка...' : 'Войти'}
                   </button>
                 </Form>
               )}
             </Formik>
             
             <p className="mt-3 text-center text-light-50" style={{ color: 'rgba(255,255,255,0.6)' }}>
-              {t('auth.noAccount')} <Link to="/signup" className="text-primary text-decoration-none fw-bold">Регистрация</Link>
+              Нет аккаунта? <Link to="/signup" className="text-primary text-decoration-none fw-bold">Регистрация</Link>
             </p>
           </div>
         </div>
