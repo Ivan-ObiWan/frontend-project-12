@@ -3,29 +3,17 @@ name: hexlet-check
 on:
   push:
     branches:
-      - main
-  pull_request:
+      - '**'
+    tags:
+      - '**'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Hexlet project check
+        uses: hexlet/project-action@release
         with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: make install
-
-      - name: Run linter
-        run: make lint || true
-
-      - name: Build project
-        run: make build
-
-      - name: Run tests
-        run: make test || true
+          hexlet-id: ${{ secrets.HEXLET_ID }}
