@@ -2,26 +2,16 @@
   "name": "@hexlet/code",
   "version": "1.0.0",
   "description": "Hexlet Chat Project",
-  "main": "index.js",
+  "engines": {
+    "node": ">=16 <22"
+  },
   "scripts": {
     "build": "make build",
     "start": "make start",
     "dev": "make dev",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"No tests yet\""
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Ivan-ObiWan/frontend-project-12.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
-  "bugs": {
-    "url": "https://github.com/Ivan-ObiWan/frontend-project-12/issues"
-  },
-  "homepage": "https://github.com/Ivan-ObiWan/frontend-project-12#readme",
   "dependencies": {
-    "@hexlet/chat-server": "^2.0.4"
+    "@hexlet/chat-server": "^1.1.9"
   }
 }
