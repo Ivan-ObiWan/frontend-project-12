@@ -25,9 +25,7 @@
 
 ###  Клонировать репозиторий
 
-```bash
-git clone git@github.com:Ivan-ObiWan/frontend-project-12.git
-``bash
+git clone https://github.com/Ivan-ObiWan/frontend-project-12.git
 
 ### Установить зависимости
 
