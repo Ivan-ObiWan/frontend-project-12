@@ -13,20 +13,21 @@ function ChannelMenu({ channel, onRename, onDelete }) {
         className="p-0 text-secondary"
         id={`dropdown-${channel.id}`}
         size="sm"
+        aria-label={t('channels.menu')}
       >
         ⋮
       </Dropdown.Toggle>
 
       <Dropdown.Menu>
         <Dropdown.Item onClick={() => onRename(channel)}>
-          ✏️ {t('channels.rename')}
+          {t('channels.rename')}
         </Dropdown.Item>
         <Dropdown.Item
           onClick={() => onDelete(channel)}
           disabled={isDefault}
           className={isDefault ? 'text-muted' : 'text-danger'}
         >
-          🗑️ {t('channels.delete')}
+          {t('channels.delete')}
         </Dropdown.Item>
         {isDefault && (
           <Dropdown.Item disabled className="text-muted small">
