@@ -12,6 +12,6 @@
     "test": "echo \"No tests yet\""
   },
   "dependencies": {
-    "@hexlet/chat-server": "^1.1.9"
+    "@hexlet/chat-server": "^2.0.4"
   }
 }
